@@ -90,8 +90,7 @@ def issues():
     projects = gl.projects.list(member=True)
 
     for project in projects:
-        issues = project.issues.list(
-            state=IssueState.OPEN.value)
+        issues = project.issues.list(state=IssueState.OPEN.value)
         if issues is None:
             continue
         for issue in issues:
