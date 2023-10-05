@@ -25,8 +25,9 @@ def issue_description_guideline(issue):
 
     Caso não respeite as regras de descrição efetua um comentário informando ao usuário.
     '''
-    if issue.description is not None:
+    if issue.description is not None and len(issue.description) > 15:
         return
+
     note = issue.notes.create(
         {'body': f''':wave: @{issue.author['username']}, vi aqui que faltaram algumas informações nessa issue. Segue o nosso guia:
 
@@ -91,7 +92,7 @@ def notes(issue):
     i_notes = issue.notes.list()
     for note in i_notes:
         note_author = note.author['name']
-        if note_author == 'Antaeus-bot':
+        if note_author == BOT_NAME:
             already_commented = True
             break
 
@@ -101,16 +102,23 @@ def notes(issue):
 
 
 def issues():
-    groups = gl.groups.list()
+    projects = gl.projects.list(member=True)
 
-    for group in groups:
-        if group.name.upper() not in GROUPS.upper():
+    for project in projects:
+        issues = project.issues.list(
+            state=IssueState.OPEN.value)
+        if issues is None:
             continue
-        projects = group.projects.list(include_subgroups=True)
-        for project in projects:
-            issues = project.issues.list(state=IssueState.OPEN.value)
-            for issue in issues:
-                notes(issue=issue)
+        for issue in issues:
+            notes(issue=issue)
+
+
+def current_user():
+    global USER
+    global BOT_NAME
+    user = gl.user
+    USER = gl.users.get(user.id)
+    BOT_NAME = USER.name
 
 
 def main():
@@ -119,6 +127,7 @@ def main():
                        private_token=TOKEN)
     # gl.enable_debug()
     gl.auth()
+    current_user()
     issues()
 
 
