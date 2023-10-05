@@ -9,7 +9,7 @@ load_dotenv()
 TOKEN = os.environ['TOKEN']
 GITLAB_URL = os.environ['GITLAB_URL']
 GROUPS = os.environ['GROUPS']
-MATCH_LABELS = os.environ['MATCH_LABELS']
+MATCH_LABELS = os.environ['MATCH_LABELS'].split(',')
 
 
 class IssueState(Enum):
@@ -46,29 +46,14 @@ def issue_label_guideline(issue):
 
     Caso não respeite as regras de labels informadas efetua um comentário informando ao usuário as labels faltantes.
     '''
-    # TODO criar labels como parametros dinâmicos configuraveis
     text = ''
-    type_label = False
-    system_label = False
-    squad_label = False
-    for l in issue.labels:
-        if 'type::' in l:
-            type_label = True
-        if 'system::' in l:
-            system_label = True
-        if 'squad::' in l:
-            squad_label = True
-    if type_label == False:
-        text += '`type::` '
-    if system_label == False:
-        text += '`squad::` '
-    if squad_label == False:
-        text += '`squad::`'
-    if text == '':
-        return
+    for label in MATCH_LABELS:
+        if any(label in s for s in issue.labels):
+            continue
+        text += f'`{label}` '
 
     note = issue.notes.create(
-        {'body': f''':wave: @{issue.author['username']}, adicione pelo menos uma label [{text}]. Essas labels nos ajudam a organizar nossas issues.
+        {'body': f''':wave: @{issue.author['username']}, adicione pelo menos uma label [{text.strip().replace(' ', ',')}]. Essas labels nos ajudam a organizar nossas issues.
 
 Se você tiver dúvida de quais labels colocar fale com seu líder técnico, ele com certeza lhe ajudará!
 
@@ -114,11 +99,8 @@ def issues():
 
 
 def current_user():
-    global USER
     global BOT_NAME
-    user = gl.user
-    USER = gl.users.get(user.id)
-    BOT_NAME = USER.name
+    BOT_NAME = gl.user.name
 
 
 def main():
