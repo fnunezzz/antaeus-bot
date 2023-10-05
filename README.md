@@ -4,7 +4,7 @@ Desenvolvido como projeto passa-tempo no meu tempo livre para atender algumas de
 
 A intenção é automatizar alguns alertas e validações de issues e MRs dos desenvolvedores baseada na realidade da minha empresa atual.
 
-O projeto final visa atender de forma mais possível genérica projetos "hosteados" no GitLab.
+O projeto final visa atender de forma mais genérica possível projetos "hosteados" no GitLab.
 
 ## To-Dos
 
