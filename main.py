@@ -8,6 +8,8 @@ load_dotenv()
 
 TOKEN = os.environ['TOKEN']
 GITLAB_URL = os.environ['GITLAB_URL']
+GROUPS = os.environ['GROUPS']
+MATCH_LABELS = os.environ['MATCH_LABELS']
 
 
 class IssueState(Enum):
@@ -15,11 +17,14 @@ class IssueState(Enum):
     CLOSED = 'closed'
 
 
-class NoteGuidelines(Enum):
-    NO_DESCRIPTION = '21419sandqwiou31'
+def issue_description_guideline(issue):
+    '''
+    Recebe uma issue
 
+    Efetua as validações de descrição na issue informada. 
 
-def issueDescriptionGuideline(issue):
+    Caso não respeite as regras de descrição efetua um comentário informando ao usuário.
+    '''
     if issue.description is not None:
         return
     note = issue.notes.create(
@@ -32,24 +37,31 @@ def issueDescriptionGuideline(issue):
     note.save()
 
 
-def issueLabelGuideline(issue):
+def issue_label_guideline(issue):
+    '''
+    Recebe uma issue
+
+    Efetua as validações de label na issue informada. 
+
+    Caso não respeite as regras de labels informadas efetua um comentário informando ao usuário as labels faltantes.
+    '''
     # TODO criar labels como parametros dinâmicos configuraveis
     text = ''
-    typeLabel = False
-    systemLabel = False
-    squadLabel = False
+    type_label = False
+    system_label = False
+    squad_label = False
     for l in issue.labels:
         if 'type::' in l:
-            typeLabel = True
+            type_label = True
         if 'system::' in l:
-            systemLabel = True
+            system_label = True
         if 'squad::' in l:
-            squadLabel = True
-    if typeLabel == False:
+            squad_label = True
+    if type_label == False:
         text += '`type::` '
-    if systemLabel == False:
+    if system_label == False:
         text += '`squad::` '
-    if squadLabel == False:
+    if squad_label == False:
         text += '`squad::`'
     if text == '':
         return
@@ -64,28 +76,41 @@ Se você tiver dúvida de quais labels colocar fale com seu líder técnico, ele
 
 
 def notes(issue):
-    alreadyCommented = False
+    '''
+    Recebe uma issue
+
+    Passos:
+    - valida se já foi comentado pelo bot 
+        - caso já comentado efetua as validações necessárias e comenta baseado no que falta
+
+    Guidelines:
+    - Issue deve possuir conteúdo
+    - Issue deve ter X labels
+    '''
+    already_commented = False
     i_notes = issue.notes.list()
     for note in i_notes:
-        noteAuthor = note.author['name']
-        if noteAuthor == 'Antaeus-bot':
-            alreadyCommented = True
+        note_author = note.author['name']
+        if note_author == 'Antaeus-bot':
+            already_commented = True
             break
 
-    if alreadyCommented == False:
-        issueDescriptionGuideline(issue=issue)
-        issueLabelGuideline(issue=issue)
+    if already_commented == False:
+        issue_description_guideline(issue=issue)
+        issue_label_guideline(issue=issue)
 
 
 def issues():
-    # projects = gl.projects.list(iterator=True)
+    groups = gl.groups.list()
 
-    project = gl.projects.get(653)
-    print(project.id, project.name)
-    # for project in projects:
-    issues = project.issues.list(state=IssueState.OPEN.value)
-    for issue in issues:
-        notes(issue=issue)
+    for group in groups:
+        if group.name.upper() not in GROUPS.upper():
+            continue
+        projects = group.projects.list(include_subgroups=True)
+        for project in projects:
+            issues = project.issues.list(state=IssueState.OPEN.value)
+            for issue in issues:
+                notes(issue=issue)
 
 
 def main():
