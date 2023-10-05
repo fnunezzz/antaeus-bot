@@ -8,9 +8,11 @@ O projeto final visa atender de forma mais genérica possível projetos "hostead
 
 ## To-Dos
 
--   [ ] Interface HTTP para Webhooks do GitLab
--   [ ] Labels dinâmicos via parâmetro (env ?)
--   [ ] Análise de MRs
+-   [ ] Interface Http para Webhooks do GitLab
+-   [ ] Validar possibilidade de configurar labels para validação de forma dinâmica (env ?)
+-   [ ] Análise de MRs e comentários
+-   [ ] Adicionar build docker
+-   [ ] Documentação de instalação e uso
 
 \
 \
