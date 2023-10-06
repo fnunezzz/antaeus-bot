@@ -55,7 +55,7 @@ def issue_label_guideline(issue):
         text += f'`{label}` '
 
     note = issue.notes.create(
-        {'body': f''':wave: @{issue.author['username']}, adicione pelo menos uma label [{text.strip().replace(' ', ',')}]. Essas labels nos ajudam a organizar nossas issues.
+        {'body': f''':wave: @{issue.author['username']}, adicione pelo menos uma label [{text.strip().replace(' ', ',')}]. Essas labels nos ajudam a manter nossos projetos organizados.
 
 Se você tiver dúvida de quais labels colocar fale com seu líder técnico, ele com certeza lhe ajudará!
 
@@ -89,14 +89,17 @@ def notes(issue):
 
 
 def process_all_issues():
+    print('bbbb')
     projects = gl.projects.list(member=True)
 
-    for project in projects:
-        issues = project.issues.list(state=IssueState.OPEN.value)
-        if issues is None:
-            continue
-        for issue in issues:
-            notes(issue=issue)
+    def projects_async():
+        for project in projects:
+            issues = project.issues.list(state=IssueState.OPEN.value)
+            if issues is None:
+                continue
+            for issue in issues:
+                threading.Thread(target=notes, args=(issue,)).start()
+    threading.Thread(target=projects_async).start()
 
 
 def current_user():
@@ -115,7 +118,10 @@ current_user()
 @app.route("/full-scan", methods=['POST'])
 def full_scan():
     response = Response('Running full scan')
-    threading.Thread(target=process_all_issues()).start()
+
+    def webhook_async():
+        process_all_issues()
+    threading.Thread(target=webhook_async).start()
     return response
 
 
