@@ -89,7 +89,6 @@ def notes(issue):
 
 
 def process_all_issues():
-    print('bbbb')
     projects = gl.projects.list(member=True)
 
     def projects_async():
@@ -125,7 +124,7 @@ def full_scan():
     return response
 
 
-@app.route("/webhook/issue", methods=['POST', 'PUT', 'GET', 'OPTIONS'])
+@app.route("/webhook/issue", methods=['POST'])
 def webhook_issue():
     response = Response('Running issue webhook')
 

@@ -1,0 +1,4 @@
+Flask
+python-gitlab
+requests
+python-dotenv
