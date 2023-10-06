@@ -12,7 +12,7 @@ O projeto final visa atender de forma mais genérica possível projetos "hostead
 -   [x] Validar possibilidade de configurar labels para validação de forma dinâmica (env ?)
 -   [ ] Análise de MRs
 -   [x] Análise de issues
--   [ ] Adicionar build docker
+-   [x] Adicionar build docker
 -   [ ] Documentação de instalação e uso
 
 \
