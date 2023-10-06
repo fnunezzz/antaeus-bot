@@ -1,10 +1,12 @@
 import gitlab
+import threading
 from enum import Enum
 import os
 from dotenv import load_dotenv
-# TODO criar interface HTTP para o webhook
+from flask import Flask, request, Response
 
 load_dotenv()
+
 
 TOKEN = os.environ['TOKEN']
 GITLAB_URL = os.environ['GITLAB_URL']
@@ -86,7 +88,7 @@ def notes(issue):
         issue_label_guideline(issue=issue)
 
 
-def issues():
+def process_all_issues():
     projects = gl.projects.list(member=True)
 
     for project in projects:
@@ -102,15 +104,34 @@ def current_user():
     BOT_NAME = gl.user.name
 
 
-def main():
-    global gl
-    gl = gitlab.Gitlab(url=GITLAB_URL,
-                       private_token=TOKEN)
-    # gl.enable_debug()
-    gl.auth()
-    current_user()
-    issues()
+app = Flask(__name__)
+gl = gitlab.Gitlab(url=GITLAB_URL,
+                   private_token=TOKEN)
+# gl.enable_debug()
+gl.auth()
+current_user()
+
+
+@app.route("/full-scan", methods=['POST'])
+def full_scan():
+    response = Response('Running full scan')
+    threading.Thread(target=process_all_issues()).start()
+    return response
+
+
+@app.route("/webhook/issue", methods=['POST', 'PUT', 'GET', 'OPTIONS'])
+def webhook_issue():
+    response = Response('Running issue webhook')
+
+    def webhook_async(req):
+        projects = gl.projects.get(req['project']['id'], lazy=True)
+        issue = projects.issues.get(
+            req['object_attributes']['id'])
+        notes(issue=issue)
+
+    threading.Thread(target=webhook_async, args=(request.json,)).start()
+    return response
 
 
 if __name__ == '__main__':
-    main()
+    app.run()
