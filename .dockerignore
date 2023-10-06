@@ -7,3 +7,4 @@ gitlab
 *.yml
 LICENSE
 *.md
+Dockerfile
