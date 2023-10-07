@@ -19,7 +19,7 @@ O projeto final visa atender de forma mais genérica possível projetos "hostead
 
 Essa aplicação utiliza algumas variáveis de ambiente.
 
-|  variável  |         descrição          | obrigatório |
+|  Variável  |         Descrição          | Obrigatório |
 | :--------: | :------------------------: | :---------: |
 | GITLAB_URL |      A url do GitLab       |      x      |
 |   TOKEN    |  Token de usuário do Bot   |      x      |
@@ -43,7 +43,7 @@ Para buildar localmente deve executar `docker build . -t antaeus`.
 
 Caso deseje buscar a imagem nativa mais recente executar `docker pull filipenunez/antaeus:latest`.
 
-Para executar executar o comando `docker run NOME_IMAGEM` substituindo NOME_IMAGEM pela tag.
+Em seguida executar o comando `docker run NOME_IMAGEM` substituindo NOME_IMAGEM pela tag.
 
 _Em ambos os casos é necessário utilizar as variáveis de ambiente obrigatórias._
 
