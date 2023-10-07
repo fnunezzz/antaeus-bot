@@ -1,22 +1,62 @@
 import gitlab
 import threading
-from enum import Enum
+import time
+import sys
 import os
+from enum import Enum
 from dotenv import load_dotenv
 from flask import Flask, request, Response
 
-load_dotenv()
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
+def out(message: str, color: bcolors):
+    return f'{color}{message}{bcolors.ENDC}'
+
+
+load_dotenv()
 
 TOKEN = os.environ['TOKEN']
 GITLAB_URL = os.environ['GITLAB_URL']
-GROUPS = os.environ['GROUPS']
-MATCH_LABELS = os.environ['MATCH_LABELS'].split(',')
+LABELS = os.environ.get('LABELS', '').split(',')
+
+app = Flask(__name__)
+gl = gitlab.Gitlab(url=GITLAB_URL,
+                   private_token=TOKEN)
+# gl.enable_debug()
 
 
 class IssueState(Enum):
     OPEN = 'opened'
     CLOSED = 'closed'
+
+
+def auth():
+    try:
+        gl.auth()
+    except Exception:
+        print(out(message='\nERROR: Erro autenticando no GitLab', color=bcolors.FAIL))
+        sys.stdout.write(
+            out(message='Tentando novamente... ', color=bcolors.WARNING))
+        for i in range(5, 0, -1):
+            sys.stdout.write(
+                out(message=f'{str(i)}  ', color=bcolors.WARNING))
+            sys.stdout.flush()
+            time.sleep(1)
+        return auth()
+    else:
+        print(out(message='Conectado com sucesso', color=bcolors.OKGREEN))
+        current_user()
 
 
 def issue_description_guideline(issue):
@@ -36,6 +76,8 @@ def issue_description_guideline(issue):
 - O conteúdo da issue não deve ser vazio
 - Coloque o minímo de informação possível para que possamos atuar no problema/melhoria
 
+Essas ações nos permitem manter uma estrutura organizada e informativa de tudo que acontece nas nossas aplicações.
+
 *Essa mensagem foi gerada automaticamente*'''})
     note.save()
 
@@ -49,13 +91,13 @@ def issue_label_guideline(issue):
     Caso não respeite as regras de labels informadas efetua um comentário informando ao usuário as labels faltantes.
     '''
     text = ''
-    for label in MATCH_LABELS:
+    for label in LABELS:
         if any(label in s for s in issue.labels):
             continue
         text += f'`{label}` '
 
     note = issue.notes.create(
-        {'body': f''':wave: @{issue.author['username']}, adicione pelo menos uma label [{text.strip().replace(' ', ',')}]. Essas labels nos ajudam a manter nossos projetos organizados.
+        {'body': f''':wave: @{issue.author['username']}, adicione pelo menos uma label [{text.strip().replace(' ', ',')}]. Essas labels nos ajudam a manter nossos projetos organizados e categorizados corretamente para atuação.
 
 Se você tiver dúvida de quais labels colocar fale com seu líder técnico, ele com certeza lhe ajudará!
 
@@ -91,27 +133,19 @@ def notes(issue):
 def process_all_issues():
     projects = gl.projects.list(member=True)
 
-    def projects_async():
-        for project in projects:
-            issues = project.issues.list(state=IssueState.OPEN.value)
-            if issues is None:
-                continue
-            for issue in issues:
-                threading.Thread(target=notes, args=(issue,)).start()
-    threading.Thread(target=projects_async).start()
+    def projects_async(p):
+        issues = p.issues.list(state=IssueState.OPEN.value)
+        if issues is None:
+            return
+        for issue in issues:
+            threading.Thread(target=notes, args=(issue,)).start()
+    for project in projects:
+        threading.Thread(target=projects_async, args=(project,)).start()
 
 
 def current_user():
     global BOT_NAME
     BOT_NAME = gl.user.name
-
-
-app = Flask(__name__)
-gl = gitlab.Gitlab(url=GITLAB_URL,
-                   private_token=TOKEN)
-# gl.enable_debug()
-gl.auth()
-current_user()
 
 
 @app.route("/full-scan", methods=['POST'])
@@ -139,4 +173,5 @@ def webhook_issue():
 
 
 if __name__ == '__main__':
+    auth()
     app.run()
