@@ -163,11 +163,18 @@ def webhook_issue():
     response = Response('Running issue webhook')
 
     def webhook_async(req):
-        projects = gl.projects.get(req['project']['id'], lazy=True)
-        issue = projects.issues.get(
-            req['object_attributes']['id'])
-        notes(issue=issue)
-
+        try:
+            projects = gl.projects.get(req['project']['id'])
+        except Exception as e:
+            if '404' in str(e):
+                print(out(
+                    message=f'{BOT_NAME} não faz parte do projeto {req["project"]["name"]}', color=bcolors.FAIL))
+            else:
+                print(out(message=e, color=bcolors.FAIL))
+        else:
+            issue = projects.issues.get(
+                req['object_attributes']['iid'])
+            notes(issue=issue)
     threading.Thread(target=webhook_async, args=(request.json,)).start()
     return response
 
