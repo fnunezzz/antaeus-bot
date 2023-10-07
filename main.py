@@ -90,12 +90,19 @@ def issue_label_guideline(issue):
 
     Caso não respeite as regras de labels informadas efetua um comentário informando ao usuário as labels faltantes.
     '''
+    if len(LABELS) <= 0:
+        return
+
+    if LABELS[0] == '':
+        return
+
     text = ''
     for label in LABELS:
         if any(label in s for s in issue.labels):
             continue
         text += f'`{label}` '
-
+    if text.strip() == '':
+        return
     note = issue.notes.create(
         {'body': f''':wave: @{issue.author['username']}, adicione pelo menos uma label [{text.strip().replace(' ', ',')}]. Essas labels nos ajudam a manter nossos projetos organizados e categorizados corretamente para atuação.
 
@@ -179,6 +186,6 @@ def webhook_issue():
     return response
 
 
+auth()
 if __name__ == '__main__':
-    auth()
-    app.run()
+    app.run(host='0.0.0.0')
