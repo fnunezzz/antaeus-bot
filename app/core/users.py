@@ -10,4 +10,4 @@ def configure_current_user(user: CurrentUser):
 
 
 def get_current_user() -> CurrentUser:
-    return CURRENT_USER.name
+    return CURRENT_USER

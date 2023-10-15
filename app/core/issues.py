@@ -17,7 +17,7 @@ class IssueState(Enum):
     CLOSED = 'closed'
 
 
-def __issue_description_guideline(issue: ProjectIssue) -> None:
+def _issue_description_guideline(issue: ProjectIssue) -> None:
     '''
     Recebe uma issue
 
@@ -42,7 +42,7 @@ Essas ações nos permitem manter uma estrutura organizada e informativa de tudo
     note.save()
 
 
-def __issue_label_guideline(issue: ProjectIssue) -> None:
+def _issue_label_guideline(issue: ProjectIssue) -> None:
     '''
     Recebe uma issue
 
@@ -74,7 +74,7 @@ Se você tiver dúvida de quais labels colocar fale com seu líder técnico, ele
     note.save()
 
 
-def __notes(issue: ProjectIssue) -> None:
+def _notes(issue: ProjectIssue) -> None:
     '''
     Recebe uma issue
 
@@ -90,13 +90,13 @@ def __notes(issue: ProjectIssue) -> None:
     i_notes: list[ProjectIssueNote] = issue.notes.list()
     for note in i_notes:
         note_author = note.author['name']
-        if note_author == users.get_current_user():
+        if note_author == users.get_current_user().name:
             already_commented = True
             break
 
     if already_commented == False:
-        __issue_description_guideline(issue=issue)
-        __issue_label_guideline(issue=issue)
+        _issue_description_guideline(issue=issue)
+        _issue_label_guideline(issue=issue)
 
 
 def process_issue(project, issue_iid):
@@ -110,7 +110,7 @@ def process_issue(project, issue_iid):
         else:
             print(out(message=e, color=bcolors.FAIL))
     else:
-        __notes(issue=issue)
+        _notes(issue=issue)
 
 
 def process_all_issues() -> None:
@@ -121,6 +121,6 @@ def process_all_issues() -> None:
         if issues is None:
             return
         for issue in issues:
-            threading.Thread(target=__notes, args=(issue,)).start()
+            threading.Thread(target=_notes, args=(issue,)).start()
     for project in projects_array:
         threading.Thread(target=projects_async, args=(project,)).start()
