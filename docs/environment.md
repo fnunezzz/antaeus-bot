@@ -44,7 +44,7 @@ Para adicionar mais, separe por virgula.
 
 Delta em semanas para considerar uma issue como "parada". Por default são 10 semanas.
 
--   Exemplo: 3
+-   Exemplo: `3`
 
 ## OLD_ISSUE_OLD_LABELS
 
