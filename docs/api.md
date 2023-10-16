@@ -6,7 +6,7 @@ Aqui segue uma documentação básica dos endpoints do bot `antaeus`.
 
 ## Issues
 
-### POST `/issue/full-scan`
+### POST `/issue/scan/full`
 
 Efetua um scan completo em todos os projetos que o usuário dessa aplicação possui acesso. Irá verificar se já houve comentário do Bot, caso não tenha, irá verificar as guidelines de descrição e labels.
 
@@ -15,5 +15,11 @@ Efetua um scan completo em todos os projetos que o usuário dessa aplicação po
 ### POST `/issue/webhook`
 
 Endpoint para o webhook de eventos `issue` no GitLab. Só será possível validar a issue se o usuário possuir acesso ao projeto. Irá verificar se já houve comentário do Bot, caso não tenha, irá verificar as guidelines de descrição e labels.
+
+-   Retorno: `200`
+
+### POST `/issue/scan/old`
+
+Efetua a varredura de todas as issues com mais de `OLD_ISSUE_TIME_DELTA` semanas. Comenta no card marcando o criador e remove as labels `OLD_ISSUE_OLD_LABELS` e adiciona as `OLD_ISSUE_NEW_LABELS`.
 
 -   Retorno: `200`
