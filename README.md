@@ -6,6 +6,8 @@ A intenção é automatizar alguns alertas e validações de issues e MRs dos de
 
 O projeto final visa atender de forma mais genérica possível projetos "hosteados" no GitLab.
 
+## Wiki
+
 -   [api](https://github.com/fnunezzz/antaeus/blob/main/docs/api.md)
 -   [variáveis de ambiente](https://github.com/fnunezzz/antaeus/blob/main/docs/environment.md)
 
