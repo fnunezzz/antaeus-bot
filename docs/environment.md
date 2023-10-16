@@ -57,9 +57,8 @@ Para adicionar mais, separe por virgula.
 
 ## OLD_ISSUE_NEW_LABELS
 
-Labels de uma issue considerada antiga que serão adicionadas. Aceita labels completas ou parciais.
+Labels de uma issue considerada antiga que serão adicionadas.
 
 Para adicionar mais, separe por virgula.
 
--   Exemplo completo: `Type::bug,State::priorizado`
--   Exemplo parcial: `Type,State`
+-   Exemplo: `Type::bug,State::priorizado`
