@@ -1,6 +1,7 @@
 import threading
+import datetime
 from enum import Enum
-from gitlab.v4.objects import ProjectIssue, ProjectIssueNote
+from gitlab.v4.objects import ProjectIssue, ProjectIssueNote, Project
 import app.core.users as users
 import app.core.projects as projects
 import app.config.environment as config
@@ -15,6 +16,18 @@ LABELS = config.LABELS
 class IssueState(Enum):
     OPEN = 'opened'
     CLOSED = 'closed'
+
+
+def _old_issue_guideline(issue: ProjectIssue) -> None:
+    note = issue.notes.create(
+        {'body': f'''
+:wave: @{issue.author['username']} essa issue está parada a mais de {config.OLD_ISSUE_TIME_DELTA} semanas.
+
+Label de `state` alterada para ~"state::pendente-analise"
+
+*Essa mensagem foi gerada automaticamente*
+    '''})
+    note.save()
 
 
 def _issue_description_guideline(issue: ProjectIssue) -> None:
@@ -99,6 +112,23 @@ def _notes(issue: ProjectIssue) -> None:
         _issue_label_guideline(issue=issue)
 
 
+def _old_issues(issue: ProjectIssue) -> None:
+    '''
+    Recebe uma issue
+
+    Valida se esta issue esta a X semanas sem atualizacao. Caso nao tenha atualizacao remove as labels de state e adiciona a label de pendente analise.
+    '''
+
+    _old_issue_guideline(issue=issue)
+
+    for i, label in enumerate(issue.labels):
+        for old_label in config.OLD_ISSUE_OLD_LABELS:
+            if old_label in label:
+                issue.labels.pop(i)
+    issue.labels.extend(config.OLD_ISSUE_NEW_LABELS)
+    issue.save()
+
+
 def process_issue(project, issue_iid):
     try:
         p = gl.projects.get(project['id'])
@@ -111,6 +141,25 @@ def process_issue(project, issue_iid):
             print(out(message=e, color=bcolors.FAIL))
     else:
         _notes(issue=issue)
+
+
+def process_old_issues() -> None:
+    projects_array = projects.all_projects(True)
+    now = datetime.datetime.now()
+    before = now - datetime.timedelta(weeks=config.OLD_ISSUE_TIME_DELTA)
+
+    def projects_async(p: Project):
+        issues = p.issues.list(get_all=True,
+                               state=IssueState.OPEN.value,
+                               updated_before=before.isoformat())
+
+        if issues is None:
+            return
+        for issue in issues:
+            threading.Thread(target=_old_issues,
+                             args=(issue,)).start()
+    for project in projects_array:
+        threading.Thread(target=projects_async, args=(project,)).start()
 
 
 def process_all_issues() -> None:
