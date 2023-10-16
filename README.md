@@ -6,27 +6,14 @@ A intenção é automatizar alguns alertas e validações de issues e MRs dos de
 
 O projeto final visa atender de forma mais genérica possível projetos "hosteados" no GitLab.
 
--   [API](https://github.com/fnunezzz/antaeus/blob/main/docs/api.md)
+-   [api](https://github.com/fnunezzz/antaeus/blob/main/docs/api.md)
+-   [variáveis de ambiente](https://github.com/fnunezzz/antaeus/blob/main/docs/environment.md)
 
 ## To-Dos
 
 Os to-dos foram transferidos para [issues](https://github.com/fnunezzz/antaeus/issues) do Github.
 
 ## Instalação
-
-Essa aplicação utiliza algumas variáveis de ambiente.
-
-<div align="center">
-
-|  Variável  |         Descrição          | Obrigatório |
-| :--------: | :------------------------: | :---------: |
-| GITLAB_URL |      A url do GitLab       |      x      |
-|   TOKEN    |  Token de usuário do Bot   |      x      |
-|   LABELS   | Labels que serão validadas |             |
-
-</div>
-
-O app pode também utilizar `.env` caso ele exista.
 
 É recomendado a utilização de um [ambiente virtual](https://docs.python.org/3/library/venv.html) do Python.
 
