@@ -14,7 +14,7 @@ As variáveis de ambiente abaixo pode ser informadas utilizando um arquivo `.env
 |        TOKEN         |           Token de usuário do Bot            |      x      |
 |        LABELS        |          Labels que serão validadas          |             |
 | OLD_ISSUE_TIME_DELTA |     Delta em semanas para issues antigas     |             |
-| OLD_ISSUE_OLD_LABELS |  Label a serem removidas das issues antigas  |             |
+| OLD_ISSUE_OLD_LABELS | Labels a serem removidas das issues antigas  |             |
 | OLD_ISSUE_NEW_LABELS | Labels a serem adicionada nas issues antigas |             |
 
 </div>
