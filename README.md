@@ -6,18 +6,17 @@ A intenção é automatizar alguns alertas e validações de issues e MRs dos de
 
 O projeto final visa atender de forma mais genérica possível projetos "hosteados" no GitLab.
 
+-   [API](https://github.com/fnunezzz/antaeus/blob/main/app/docs/API.md)
+
 ## To-Dos
 
--   [x] Interface Http para Webhooks do GitLab
--   [x] Validar possibilidade de configurar labels para validação de forma dinâmica (env ?)
--   [ ] Análise de MRs
--   [x] Análise de issues
--   [x] Adicionar build docker
--   [x] Documentação de instalação e uso
+Os to-dos foram transferidos para [issues](https://github.com/fnunezzz/antaeus/issues) do Github.
 
 ## Instalação
 
 Essa aplicação utiliza algumas variáveis de ambiente.
+
+<div align="center">
 
 |  Variável  |         Descrição          | Obrigatório |
 | :--------: | :------------------------: | :---------: |
@@ -25,7 +24,13 @@ Essa aplicação utiliza algumas variáveis de ambiente.
 |   TOKEN    |  Token de usuário do Bot   |      x      |
 |   LABELS   | Labels que serão validadas |             |
 
+</div>
+
 O app pode também utilizar `.env` caso ele exista.
+
+É recomendado a utilização de um [ambiente virtual](https://docs.python.org/3/library/venv.html) do Python.
+
+Para instalar as dependências executar o comando `pip install -r requirements.txt`.
 
 ### Nativamente
 
@@ -43,7 +48,9 @@ Para buildar localmente deve executar `docker build . -t antaeus`.
 
 Caso deseje buscar a imagem nativa mais recente executar `docker pull filipenunez/antaeus:latest`.
 
-Em seguida executar o comando `docker run NOME_IMAGEM` substituindo NOME_IMAGEM pela tag.
+Em seguida executar o comando `docker run -e LABELS=LABEL1,LABEL2 -e GITLAB_URL=http://localhost:8929/ -e TOKEN=TOKEN -p 5000:5000 NOME_IMAGEM` substituindo NOME_IMAGEM pela tag.
+
+Caso prefira, há também a possiblidade de executar `docker-compose up antaeus`. Esse comando **também** irá subir uma instância do Gitlab-CE.
 
 _Em ambos os casos é necessário utilizar as variáveis de ambiente obrigatórias._
 
