@@ -6,7 +6,7 @@ A intenção é automatizar alguns alertas e validações de issues e MRs dos de
 
 O projeto final visa atender de forma mais genérica possível projetos "hosteados" no GitLab.
 
--   [API](https://github.com/fnunezzz/antaeus/blob/main/app/docs/API.md)
+-   [API](https://github.com/fnunezzz/antaeus/blob/main/app/docs/api.md)
 
 ## To-Dos
 
@@ -50,7 +50,7 @@ Caso deseje buscar a imagem nativa mais recente executar `docker pull filipenune
 
 Em seguida executar o comando `docker run -e LABELS=LABEL1,LABEL2 -e GITLAB_URL=http://localhost:8929/ -e TOKEN=TOKEN -p 5000:5000 NOME_IMAGEM` substituindo NOME_IMAGEM pela tag.
 
-Caso prefira, há também a possiblidade de executar `docker-compose up antaeus`. Esse comando **também** irá subir uma instância do Gitlab-CE.
+Caso prefira, há também a possiblidade de executar `docker-compose up antaeus`. Ele irá utilizar as variáveis locais de um arquivo `.env`.
 
 _Em ambos os casos é necessário utilizar as variáveis de ambiente obrigatórias._
 
