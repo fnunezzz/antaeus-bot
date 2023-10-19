@@ -1,0 +1,49 @@
+resource_rules:
+    issues:
+        rules:
+            - name: Guideline de abertura (conteudo)
+              conditions:
+                  state: opened
+                  description:
+                      length: 25
+              comment: |
+                  :wave: @{{author}}, vi aqui que faltaram algumas informações nessa issue. Segue o nosso guia:
+
+                  - O conteúdo da issue não deve ser vazio
+                  - Coloque o minímo de informação possível para que possamos atuar no problema/melhoria
+
+                  Essas ações nos permitem manter uma estrutura organizada e informativa de tudo que acontece nas nossas aplicações.
+
+                  *Essa mensagem foi gerada automaticamente*
+            - name: Guideline de abertura (labels)
+              conditions:
+                  state: opened
+                  labels:
+                      must:
+                          - state
+                          - type
+                          - squad
+              comment: |
+                  :wave: @{{author}}, adicione pelo menos uma label {{labels}}. Essas labels nos ajudam a manter nossos projetos organizados e categorizados corretamente para atuação.
+
+                  Se você tiver dúvida de quais labels colocar fale com seu líder técnico, ele com certeza lhe ajudará!
+
+                  *Essa mensagem foi gerada automaticamente*
+            - name: Guideline de inatividade
+              conditions:
+                  date:
+                      attribute: updated_at
+                      condition: older_than
+                      interval_type: weeks
+                      interval: 3
+                  state: opened
+              labels:
+                  remove: state
+              comment: |
+                  :wave: {{author}} essa issue está parada a mais de {{delta}} {{delta_type}}.
+
+                  Label de `state` alterada para ~"state::pendente-analise"
+
+                  /label ~"state::pendente-analise"
+
+                  *Essa mensagem foi gerada automaticamente*
