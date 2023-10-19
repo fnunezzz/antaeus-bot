@@ -1,6 +1,7 @@
 import threading
 import datetime
 from enum import Enum
+from app.config.parser import Parser
 from gitlab.v4.objects import ProjectIssue, ProjectIssueNote, Project
 import app.core.users as users
 import app.core.projects as projects
@@ -10,7 +11,7 @@ from app.common.logging import out
 from app.common.bcolors import bcolors
 from app.core.users import get_current_user
 
-LABELS = config.LABELS
+ISSUE_RULES = config.CONFIG['resource_rules']['issues']['rules']
 
 
 class IssueState(Enum):
@@ -38,21 +39,29 @@ def _issue_description_guideline(issue: ProjectIssue) -> None:
 
     Caso não respeite as regras de descrição efetua um comentário informando ao usuário.
     '''
-    if issue.description is not None and len(issue.description) > 15:
-        return
+    for rule in ISSUE_RULES:
+        parser = Parser(**rule)
+        should_comment = False
+        conditions = rule.get('conditions')
+        if conditions is None:
+            continue
+        comment = rule['comment'].replace(
+            '{{author}}', issue.author['username'])
+        description = conditions.get('description')
+        if description is not None:
+            should_comment = parser.description(attr=issue.description)
 
-    note = issue.notes.create(
-        {'body': f'''
-:wave: @{issue.author['username']}, vi aqui que faltaram algumas informações nessa issue. Segue o nosso guia:
+        # date = conditions.get('date')
+        # if date is not None:
+        #     should_comment = Parser.date(attr=issue, rule=date)
 
-- O conteúdo da issue não deve ser vazio
-- Coloque o minímo de informação possível para que possamos atuar no problema/melhoria
-
-Essas ações nos permitem manter uma estrutura organizada e informativa de tudo que acontece nas nossas aplicações.
-
-*Essa mensagem foi gerada automaticamente*
-'''})
-    note.save()
+        # labels = conditions.get('labels')
+        # if labels is not None:
+        #     should_comment = Parser.labels(attr=issue.labels, rule=labels)
+        if should_comment is True:
+            note = issue.notes.create(
+                {'body': comment})
+            note.save()
 
 
 def _issue_label_guideline(issue: ProjectIssue) -> None:
@@ -109,7 +118,7 @@ def _notes(issue: ProjectIssue) -> None:
 
     if already_commented == False:
         _issue_description_guideline(issue=issue)
-        _issue_label_guideline(issue=issue)
+        # _issue_label_guideline(issue=issue)
 
 
 def _old_issues(issue: ProjectIssue) -> None:
