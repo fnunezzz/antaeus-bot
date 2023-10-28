@@ -33,7 +33,6 @@ class ConditionConfig:
     date: DateConfig = None
 
     def __init__(self, **kwargs):
-        print(kwargs.get('name'))
         self.state = kwargs.get('state')
 
         if kwargs.get('description') is not None:
@@ -45,23 +44,64 @@ class ConditionConfig:
 
 
 @dataclass()
-class Parser:
+class LabelConfig:
+    remove: list[str]
+
+    def __init__(self, **kwargs):
+        self.remove = kwargs.get('remove')
+
+
+@dataclass()
+class IssueConfigParser:
     comment: str
     conditions: ConditionConfig = None
+    labels: LabelConfig = None
 
     def __init__(self, **kwargs):
         self.comment = kwargs.get('comment')
         if kwargs.get('conditions') is not None:
             self.conditions = ConditionConfig(**kwargs.get('conditions'))
+        if kwargs.get('labels') is not None:
+            self.labels = LabelConfig(**kwargs.get('labels'))
 
-    def date(self, attr):
+    def parse(self, issue):
+        self.comment = self.comment.replace(
+            '{{author}}', issue.author['username'])
+        if self._description_condition(issue.description) == False:
+            return False
+        if self._labels_condition(issue.labels) == False:
+            return False
+        if self._date_condition(issue) == False:
+            return False
+        self._labels(issue)
+        return True
+
+    def _labels(self, issue):
+        if self.labels is None:
+            return True
+        if self.labels.remove:
+            for i, label in enumerate(issue.labels):
+                if (len(issue.labels) <= 0):
+                    break
+                for old_label in self.labels.remove:
+                    if old_label in label:
+                        if (len(issue.labels) <= 0):
+                            break
+                        issue.labels.pop(i)
+        issue.save()
+
+        pass
+
+    def _date_condition(self, attr):
+        if self.conditions.date is None:
+            return True
         x = datetime.datetime.fromisoformat(
-            attr['updated_at'].replace('Z', ''))
+            attr.updated_at.replace('Z', ''))
         interval_type = self.conditions.date.interval_type
         interval = self.conditions.date.interval
         now = datetime.datetime.now()
         delta = now - datetime.timedelta(**{interval_type: interval})
-        if self.date['condition'] == 'older_than':
+        if self.conditions.date.condition == 'older_than':
             if x < delta:
                 return True
         else:
@@ -69,22 +109,27 @@ class Parser:
                 return True
         return False
 
-    def description(self, attr: str):
+    def _description_condition(self, attr: str):
+        if self.conditions.description is None:
+            return True
         if attr is not None and len(attr) < self.conditions.description.length:
             return True
         return False
 
-    # def labels(self, attr: list[str]):
-    #     if self.labels.get('must') is not None:
-    #         text = ''
-    #         for label in self.labels['must']:
-    #             if any(label in s for s in attr):
-    #                 continue
-    #             text += f'`{label}` '
-    #         if text.strip() == '':
-    #             return False
-    #         else:
-    #             self.comment = self.comment.replace(
-    #                 '{{labels}}', text.strip().replace(' ', ','))
-    #             return True
-    #     return False
+    def _labels_condition(self, attr: list[str]):
+        if self.conditions.labels is None:
+            return True
+        if self.conditions.labels.get('must') is None:
+            return True
+
+        text = ''
+        for label in self.conditions.labels['must']:
+            if any(label in s for s in attr):
+                continue
+            text += f'`{label}` '
+        if text.strip() == '':
+            return False
+        else:
+            self.comment = self.comment.replace(
+                '{{labels}}', text.strip().replace(' ', ','))
+            return True
