@@ -61,10 +61,11 @@ class IssueConfigParser:
         if kwargs.get('conditions') is not None:
             self.conditions = ConditionConfig(**kwargs.get('conditions'))
         if kwargs.get('actions') is not None:
-            if kwargs.get('actions') is not None:
+            if kwargs.get('actions').get('comment') is not None:
                 self.comment = kwargs.get('actions').get('comment')
-            if kwargs.get('labels') is not None:
-                self.labels = LabelConfig(**kwargs.get('labels'))
+            if kwargs.get('actions').get('labels') is not None:
+                self.labels = LabelConfig(
+                    **kwargs.get('actions').get('labels'))
 
     def parse(self, issue):
         self.comment = self.comment.replace(
@@ -104,7 +105,7 @@ class IssueConfigParser:
         now = datetime.datetime.now()
         interval = now - datetime.timedelta(**{interval_type: interval})
         self.comment = self.comment.replace(
-            '{{interval}}', interval).replace('{{interval_type}}', interval_type)
+            '{{interval}}', str(self.conditions.date.interval)).replace('{{interval_type}}', interval_type)
         if self.conditions.date.condition == 'older_than':
             if x < interval:
                 return True
