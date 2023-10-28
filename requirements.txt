@@ -3,3 +3,4 @@ python-gitlab
 requests
 python-dotenv
 gunicorn
+PyYAML

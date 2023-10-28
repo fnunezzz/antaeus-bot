@@ -10,6 +10,7 @@ O projeto final visa atender de forma mais genérica possível projetos "hostead
 
 -   [api](https://github.com/fnunezzz/antaeus/blob/main/docs/api.md)
 -   [variáveis de ambiente](https://github.com/fnunezzz/antaeus/blob/main/docs/environment.md)
+-   [arquivo de configuração](https://github.com/fnunezzz/antaeus/blob/main/docs/config.md)
 
 ## To-Dos
 
@@ -37,7 +38,7 @@ Para buildar localmente deve executar `docker build . -t antaeus`.
 
 Caso deseje buscar a imagem nativa mais recente executar `docker pull filipenunez/antaeus:latest`.
 
-Em seguida executar o comando `docker run -e LABELS=LABEL1,LABEL2 -e GITLAB_URL=http://localhost:8929/ -e TOKEN=TOKEN -p 5000:5000 NOME_IMAGEM` substituindo NOME_IMAGEM pela tag.
+Em seguida executar o comando `docker run -v PATH_DO_CONFIG/config.yml:/app/config/config.yml -e GITLAB_URL=http://localhost:8929/ -e TOKEN=TOKEN -p 5000:5000 NOME_IMAGEM` substituindo os valores caso necessaŕio.
 
 Caso prefira, há também a possiblidade de executar `docker-compose up antaeus`. Ele irá utilizar as variáveis locais de um arquivo `.env`.
 
