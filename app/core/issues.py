@@ -11,7 +11,7 @@ from app.common.logging import out
 from app.common.bcolors import bcolors
 from app.core.users import get_current_user
 
-ISSUE_RULES = config.CONFIG['resource_rules']['issues']['rules']
+ISSUE_RULES = config.CONFIG['issues']['rules']
 
 
 class IssueState(Enum):
