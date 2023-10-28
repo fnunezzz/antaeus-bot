@@ -1,3 +1,4 @@
+from typing import List
 from typing_extensions import Literal
 from dataclasses import dataclass
 import datetime
@@ -45,7 +46,7 @@ class ConditionConfig:
 
 @dataclass()
 class LabelConfig:
-    remove: list[str]
+    remove: List[str]
 
     def __init__(self, **kwargs):
         self.remove = kwargs.get('remove')
@@ -121,7 +122,7 @@ class IssueConfigParser:
             return True
         return False
 
-    def _labels_condition(self, attr: list[str]):
+    def _labels_condition(self, attr: List[str]):
         if self.conditions.labels is None:
             return True
         if self.conditions.labels.get('must') is None:

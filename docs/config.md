@@ -4,7 +4,7 @@ Documentação sobre o arquivo de configuração `.yml`.
 
 [Voltar para o README](https://github.com/fnunezzz/antaeus)
 
-Essa aplicação utiliza um arquivo `.yml` de configuração de regras.
+Essa aplicação utiliza um arquivo `.yml` **obrigatório** de configuração de regras.
 
 -   [Arquivo de configuração](#arquivo-de-configuração)
     -   [Issues](#issues)

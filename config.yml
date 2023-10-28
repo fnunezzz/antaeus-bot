@@ -14,6 +14,8 @@ issues:
                   Essas ações nos permitem manter uma estrutura organizada e informativa de tudo que acontece nas nossas aplicações.
 
                   *Essa mensagem foi gerada automaticamente*
+
+                  TESTE 2
         - name: Guideline de abertura (labels)
           conditions:
               labels:
