@@ -27,7 +27,6 @@ issues:
     rules:
         - name: Guideline de abertura (conteudo)
           conditions:
-              state: opened
               description:
                   length: 25
           actions:
@@ -42,7 +41,6 @@ issues:
                   *Essa mensagem foi gerada automaticamente*
         - name: Guideline de abertura (labels)
           conditions:
-              state: opened
               labels:
                   must:
                       - state
@@ -62,12 +60,11 @@ issues:
                   condition: older_than
                   interval_type: weeks
                   interval: 3
-              state: opened
           actions:
               labels:
                   remove: state
               comment: |
-                  :wave: {{author}} essa issue está parada a mais de {{delta}} {{delta_type}}.
+                  :wave: {{author}} essa issue está parada a mais de {{interval}} {{interval_type}}.
 
                   Label de `state` alterada para ~"state::pendente-analise"
 
