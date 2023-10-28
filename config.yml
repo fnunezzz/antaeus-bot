@@ -29,13 +29,17 @@ resource_rules:
                   Se você tiver dúvida de quais labels colocar fale com seu líder técnico, ele com certeza lhe ajudará!
 
                   *Essa mensagem foi gerada automaticamente*
+
+                  /label ~"state::priorizado"
+              labels:
+                  remove: state
             - name: Guideline de inatividade
               conditions:
                   date:
                       attribute: updated_at
                       condition: older_than
                       interval_type: weeks
-                      interval: 3
+                      interval: 1
                   state: opened
               labels:
                   remove: state
@@ -44,6 +48,6 @@ resource_rules:
 
                   Label de `state` alterada para ~"state::pendente-analise"
 
-                  /label ~"state::pendente-analise"
+                  /label ~"state::priorizado"
 
                   *Essa mensagem foi gerada automaticamente*

@@ -1,7 +1,7 @@
 import threading
 import datetime
 from enum import Enum
-from app.config.parser import Parser
+from app.config.parser import IssueConfigParser
 from gitlab.v4.objects import ProjectIssue, ProjectIssueNote, Project
 import app.core.users as users
 import app.core.projects as projects
@@ -19,81 +19,20 @@ class IssueState(Enum):
     CLOSED = 'closed'
 
 
-def _old_issue_guideline(issue: ProjectIssue) -> None:
-    note = issue.notes.create(
-        {'body': f'''
-:wave: @{issue.author['username']} essa issue está parada a mais de {config.OLD_ISSUE_TIME_DELTA} semanas.
-
-Label de `state` alterada para ~"state::pendente-analise"
-
-*Essa mensagem foi gerada automaticamente*
-    '''})
-    note.save()
-
-
-def _issue_description_guideline(issue: ProjectIssue) -> None:
+def _issue_guidelines(issue: ProjectIssue) -> None:
     '''
     Recebe uma issue
 
-    Efetua as validações de descrição na issue informada. 
-
-    Caso não respeite as regras de descrição efetua um comentário informando ao usuário.
+    Efetua as regras definidas no arquivo de config
     '''
     for rule in ISSUE_RULES:
-        parser = Parser(**rule)
-        should_comment = False
-        conditions = rule.get('conditions')
-        if conditions is None:
-            continue
-        comment = rule['comment'].replace(
-            '{{author}}', issue.author['username'])
-        description = conditions.get('description')
-        if description is not None:
-            should_comment = parser.description(attr=issue.description)
-
-        # date = conditions.get('date')
-        # if date is not None:
-        #     should_comment = Parser.date(attr=issue, rule=date)
-
-        # labels = conditions.get('labels')
-        # if labels is not None:
-        #     should_comment = Parser.labels(attr=issue.labels, rule=labels)
+        parser = IssueConfigParser(**rule)
+        should_comment = parser.parse(issue=issue)
         if should_comment is True:
             note = issue.notes.create(
-                {'body': comment})
+                {'body': parser.comment})
+
             note.save()
-
-
-def _issue_label_guideline(issue: ProjectIssue) -> None:
-    '''
-    Recebe uma issue
-
-    Efetua as validações de label na issue informada. 
-
-    Caso não respeite as regras de labels informadas efetua um comentário informando ao usuário as labels faltantes.
-    '''
-    if len(LABELS) <= 0:
-        return
-
-    if LABELS[0] == '':
-        return
-
-    text = ''
-    for label in LABELS:
-        if any(label in s for s in issue.labels):
-            continue
-        text += f'`{label}` '
-    if text.strip() == '':
-        return
-    note = issue.notes.create(
-        {'body': f'''
-:wave: @{issue.author['username']}, adicione pelo menos uma label [{text.strip().replace(' ', ',')}]. Essas labels nos ajudam a manter nossos projetos organizados e categorizados corretamente para atuação.
-
-Se você tiver dúvida de quais labels colocar fale com seu líder técnico, ele com certeza lhe ajudará!
-
-*Essa mensagem foi gerada automaticamente*
-'''})
-    note.save()
 
 
 def _notes(issue: ProjectIssue) -> None:
@@ -102,11 +41,7 @@ def _notes(issue: ProjectIssue) -> None:
 
     Passos:
     - valida se já foi comentado pelo bot 
-        - caso já comentado efetua as validações necessárias e comenta baseado no que falta
-
-    Guidelines:
-    - Issue deve possuir conteúdo
-    - Issue deve ter X labels
+        - caso já comentado efetua as validações necessárias nas rules do arquivo de config
     '''
     already_commented = False
     i_notes: list[ProjectIssueNote] = issue.notes.list()
@@ -117,25 +52,17 @@ def _notes(issue: ProjectIssue) -> None:
             break
 
     if already_commented == False:
-        _issue_description_guideline(issue=issue)
-        # _issue_label_guideline(issue=issue)
+        _issue_guidelines(issue=issue)
 
 
 def _old_issues(issue: ProjectIssue) -> None:
     '''
     Recebe uma issue
 
-    Valida se esta issue esta a X semanas sem atualizacao. Caso nao tenha atualizacao remove as labels de state e adiciona a label de pendente analise.
+    Efetua novamente todas as validações de issue
     '''
 
-    _old_issue_guideline(issue=issue)
-
-    for i, label in enumerate(issue.labels):
-        for old_label in config.OLD_ISSUE_OLD_LABELS:
-            if old_label in label:
-                issue.labels.pop(i)
-    issue.labels.extend(config.OLD_ISSUE_NEW_LABELS)
-    issue.save()
+    _issue_guidelines(issue=issue)
 
 
 def process_issue(project, issue_iid):
@@ -154,13 +81,10 @@ def process_issue(project, issue_iid):
 
 def process_old_issues() -> None:
     projects_array = projects.all_projects(True)
-    now = datetime.datetime.now()
-    before = now - datetime.timedelta(weeks=config.OLD_ISSUE_TIME_DELTA)
 
     def projects_async(p: Project):
         issues = p.issues.list(get_all=True,
-                               state=IssueState.OPEN.value,
-                               updated_before=before.isoformat())
+                               state=IssueState.OPEN.value)
 
         if issues is None:
             return
