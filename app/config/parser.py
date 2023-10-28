@@ -53,16 +53,18 @@ class LabelConfig:
 
 @dataclass()
 class IssueConfigParser:
-    comment: str
+    comment: str = None
     conditions: ConditionConfig = None
     labels: LabelConfig = None
 
     def __init__(self, **kwargs):
-        self.comment = kwargs.get('comment')
         if kwargs.get('conditions') is not None:
             self.conditions = ConditionConfig(**kwargs.get('conditions'))
-        if kwargs.get('labels') is not None:
-            self.labels = LabelConfig(**kwargs.get('labels'))
+        if kwargs.get('actions') is not None:
+            if kwargs.get('actions') is not None:
+                self.comment = kwargs.get('actions').get('comment')
+            if kwargs.get('labels') is not None:
+                self.labels = LabelConfig(**kwargs.get('labels'))
 
     def parse(self, issue):
         self.comment = self.comment.replace(
@@ -100,12 +102,14 @@ class IssueConfigParser:
         interval_type = self.conditions.date.interval_type
         interval = self.conditions.date.interval
         now = datetime.datetime.now()
-        delta = now - datetime.timedelta(**{interval_type: interval})
+        interval = now - datetime.timedelta(**{interval_type: interval})
+        self.comment = self.comment.replace(
+            '{{interval}}', interval).replace('{{interval_type}}', interval_type)
         if self.conditions.date.condition == 'older_than':
-            if x < delta:
+            if x < interval:
                 return True
         else:
-            if x > delta:
+            if x > interval:
                 return True
         return False
 
